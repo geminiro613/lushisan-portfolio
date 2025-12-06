@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LUSHISAN | 陆拾叁工作室</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #050505;
+            --text-main: #ffffff;
+            --text-sub: #888888;
+            /* 这种酸性绿依然保留，搭配 LUSHISAN 很潮 */
+            --accent: #CCFF00; 
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* 背景遮罩 */
+        .bg-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to right, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.2) 100%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .bg-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url(''); 
+            background-size: cover;
+            background-position: center;
+            opacity: 0.8;
+            z-index: -1;
+            transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 40px 60px;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 10;
+        }
+
+        .logo { 
+            font-weight: 900; 
+            letter-spacing: 1px; 
+            font-size: 26px;
+            text-transform: uppercase;
+        }
+        
+        /* 让 LUSHISAN 的后半部分稍微亮一点或有个点缀 */
+        .logo span { color: var(--accent); }
+
+        .social-links a {
+            color: var(--text-main);
+            text-decoration: none;
+            margin-left: 15px;
+            font-size: 12px;
+            border: 1px solid var(--border);
+            padding: 10px 20px;
+            border-radius: 4px;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: inline-flex;
+            align-items: center;
+        }
+        .social-links a:hover { 
+            background: var(--accent); 
+            color: #000; 
+            border-color: var(--accent); 
+            font-weight: bold;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            align-items: center;
+            padding: 0 60px;
+            justify-content: space-between;
+            position: relative;
+            z-index: 1;
+        }
+
+        .text-content { max-width: 55%; position: relative; z-index: 2; }
+        
+        h1 {
+            font-size: 7vw;
+            line-height: 0.85;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 30px;
+            letter-spacing: -2px;
+            mix-blend-mode: difference;
+        }
+
+        .desc-box {
+            border-left: 2px solid var(--accent);
+            padding-left: 20px;
+            margin-bottom: 40px;
+        }
+
+        .desc {
+            color: #ccc;
+            max-width: 420px;
+            line-height: 1.6;
+            font-size: 15px;
+            font-weight: 300;
+        }
+
+        .progress-bar {
+            width: 200px; height: 2px;
+            background: rgba(255,255,255,0.1);
+            margin-top: 20px; position: relative;
+        }
+        .progress-fill {
+            position: absolute; left: 0; top: 0; height: 100%;
+            background: var(--accent); width: 25%; transition: width 0.5s;
+        }
+
+        /* 底部版权 */
+        .footer-info {
+            position: absolute; bottom: 40px; left: 60px;
+            font-size: 12px; color: #555; letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .slider-wrapper {
+            position: relative;
+            width: 380px; height: 520px;
+            perspective: 1000px;
+        }
+
+        .slide-card {
+            position: absolute; width: 100%; height: 100%;
+            background: rgba(10, 10, 10, 0.7);
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(30px);
+            padding: 40px;
+            display: flex; flex-direction: column; justify-content: space-between;
+            cursor: pointer;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .slide-card:hover { transform: translateY(-10px) scale(1.02); border-color: var(--accent); }
+        .card-label { font-size: 11px; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; font-weight: 700; margin-bottom: 5px; }
+        .card-title { font-size: 36px; line-height: 1; font-weight: 700; margin-bottom: 20px; color: #fff;}
+        .card-img {
+            width: 100%; flex-grow: 1;
+            background-color: #222; margin-bottom: 20px;
+            background-size: cover; background-position: center;
+            filter: grayscale(20%); transition: filter 0.3s;
+        }
+        .slide-card:hover .card-img { filter: grayscale(0%); }
+        .btn-circle {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: #fff; color: #000;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 18px;
+        }
+
+        @media (max-width: 768px) {
+            .container { flex-direction: column; justify-content: flex-end; padding: 20px; padding-bottom: 60px; }
+            .text-content { max-width: 100%; margin-bottom: 30px; }
+            h1 { font-size: 14vw; margin-bottom: 15px; }
+            .slider-wrapper { width: 100%; height: 160px; margin-top: 20px; }
+            .slide-card { flex-direction: row; padding: 20px; align-items: center; }
+            .card-img { width: 80px; height: 80px; margin: 0 15px 0 0; flex-grow: 0; }
+            nav { padding: 20px; }
+            .logo { font-size: 20px; }
+            .footer-info { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-layer" id="bg"></div>
+    <div class="bg-overlay"></div>
+
+    <nav>
+        <div class="logo">LU<span>SHISAN</span></div>
+        <div class="social-links" id="socials">
+            </div>
+    </nav>
+
+    <div class="container">
+        <div class="text-content">
+            <div id="text-anim-wrapper">
+                <h1 id="main-title">LOADING</h1>
+                <div class="desc-box">
+                    <p class="desc" id="main-desc">...</p>
+                </div>
+            </div>
+            
+            <div style="display:flex; align-items:center; gap:15px; opacity:0.8; font-family:monospace;">
+                <span id="current-index" style="color:var(--accent)">01</span>
+                <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+                <span id="total-count">04</span>
+            </div>
+        </div>
+
+        <div class="footer-info">© 2024 LUSHISAN STUDIO / SHANGHAI</div>
+
+        <div class="slider-wrapper">
+            <div class="slide-card" onclick="nextSlide()">
+                <div style="flex:1">
+                    <div class="card-label">NEXT PROJECT</div>
+                    <div class="card-title" id="next-title">Next</div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div class="btn-circle">→</div>
+                        <span style="font-size:12px; color:#666">TAP TO VIEW</span>
+                    </div>
+                </div>
+                <div class="card-img" id="next-img"></div> 
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // LUSHISAN 的专属配置
+        // ==========================================
+        const config = {
+            // 这里绑定了你的真实链接
+            socials: [
+                { 
+                    name: "Xiaohongshu", 
+                    link: "https://www.xiaohongshu.com/user/profile/5f9e13c4000000000101c5e5" 
+                },
+                { 
+                    name: "Taobao Shop", 
+                    link: "https://m.tb.cn/h.70aGSHV7jQpiLg9" 
+                }
+            ],
+            // 你的作品数据 (图片链接使用了 Unsplash 的设计类高清图)
+            works: [
+                {
+                    title: "BRAND\nIDENTITY",
+                    desc: "LUSHISAN STUDIO 出品：为高端面粉品牌设计的极简包装，融合了复古与现代艺术风格，采用环保纸张材质。",
+                    bgImage: "https://images.unsplash.com/photo-1634152962476-4b8a00e1915c?q=80&w=2500&auto=format", 
+                    thumb: "https://images.unsplash.com/photo-1541512416146-3cf58d6b27cc?q=80&w=600&auto=format",
+                },
+                {
+                    title: "KEY VISUAL\nARTWORK",
+                    desc: "显微镜公司十周年主视觉 Key Visual，使用 Cinema 4D 渲染抽象微观世界。",
+                    bgImage: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2500&auto=format",
+                    thumb: "https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80&w=600&auto=format",
+                },
+                {
+                    title: "TYPOGRAPHY\nPOSTER",
+                    desc: "英语课程宣传海报，基于瑞士国际主义平面风格（Swiss Style）的网格排版系统。",
+                    bgImage: "https://images.unsplash.com/photo-1572044162444-ad60f128bdea?q=80&w=2500&auto=format",
+                    thumb: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=600&auto=format",
+                },
+                {
+                    title: "UI/UX\nINTERFACE",
+                    desc: "macOS 风格的业务管理 App 界面，玻璃拟态（Glassmorphism）与暗黑模式设计。",
+                    bgImage: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=2500&auto=format",
+                    thumb: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=600&auto=format",
+                }
+            ]
+        };
+
+        // ==========================================
+        // 核心逻辑
+        // ==========================================
+        
+        const socialContainer = document.getElementById('socials');
+        config.socials.forEach(s => {
+            socialContainer.innerHTML += `<a href="${s.link}" target="_blank">${s.name}</a>`;
+        });
+        document.getElementById('total-count').innerText = '0' + config.works.length;
+
+        let currentIndex = 0;
+
+        function render() {
+            const currentWork = config.works[currentIndex];
+            const nextIndex = (currentIndex + 1) % config.works.length;
+            const nextWork = config.works[nextIndex];
+
+            // 更新背景
+            const bg = document.getElementById('bg');
+            bg.style.backgroundImage = `url(${currentWork.bgImage})`;
+            
+            // 文字动画
+            const tl = gsap.timeline();
+            tl.to("#text-anim-wrapper", { y: -20, opacity: 0, duration: 0.3 })
+              .set("#main-title", { textContent: currentWork.title })
+              .set("#main-desc", { textContent: currentWork.desc })
+              .to("#text-anim-wrapper", { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" });
+
+            // 进度条
+            document.getElementById('current-index').innerText = '0' + (currentIndex + 1);
+            const progressPercent = ((currentIndex + 1) / config.works.length) * 100;
+            document.getElementById('progress').style.width = `${progressPercent}%`;
+
+            // 下一张预告
+            const nextTitle = document.getElementById('next-title');
+            const nextImg = document.getElementById('next-img');
+            
+            gsap.to(nextTitle, { opacity: 0, duration: 0.2, onComplete: () => {
+                nextTitle.innerText = nextWork.title.replace('\n', ' ');
+                gsap.to(nextTitle, { opacity: 1, duration: 0.2 });
+            }});
+            
+            nextImg.style.backgroundImage = `url(${nextWork.thumb})`;
+        }
+
+        function nextSlide() {
+            gsap.fromTo("#bg", { scale: 1 }, { scale: 1.05, duration: 0.4, yoyo: true, repeat: 1 });
+            currentIndex = (currentIndex + 1) % config.works.length;
+            render();
+        }
+
+        render();
+
+    </script>
+</body>
+</html>
